@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Anchor, ArrowDown, Flame, Gift, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,11 +36,12 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   return <p className="mb-5 text-xs font-semibold uppercase tracking-[0.22em] text-gold">{children}</p>;
 }
 
-function PreorderButton({ label = "Quero garantir meu exemplar", outline = false }: { label?: string; outline?: boolean }) {
-  return <Button asChild variant={outline ? "goldOutline" : "gold"} size="lg" className="h-13 w-full px-6 text-xs font-bold uppercase tracking-[0.12em] sm:w-auto"><a href={PREORDER_URL}><Anchor className="size-4" />{label}</a></Button>;
+function PreorderButton({ label = "Quero garantir meu exemplar", outline = false, href = PREORDER_URL }: { label?: string; outline?: boolean; href?: string }) {
+  return <Button asChild variant={outline ? "goldOutline" : "gold"} size="lg" className="h-13 w-full px-6 text-xs font-bold uppercase tracking-[0.12em] sm:w-auto"><a href={href}><Anchor className="size-4" />{label}</a></Button>;
 }
 
 function Index() {
+  const [delivery, setDelivery] = useState<"presencial" | "correio">("presencial");
   const journey = [
     ["01", "Dor", "Acolher a dor da despedida sem culpa."],
     ["02", "Memória", "Guardar aquilo que o amor deixou."],
@@ -100,9 +102,29 @@ function Index() {
 
     <section className="bg-ivory py-24 sm:py-32"><div className="section-shell grid gap-12 lg:grid-cols-[.7fr_1.3fr]"><img src={padreWesley} alt="Pe. Wesley Xavier Ramos em oração" loading="lazy" className="aspect-[4/5] w-full object-cover ring-1 ring-gold/40"/><div className="self-center"><Eyebrow>Sobre o autor</Eyebrow><h2 className="text-4xl text-navy sm:text-5xl">Presença, escuta, silêncio e fé.</h2><p className="mt-7 max-w-2xl text-lg leading-9 text-charcoal/80">Sacerdote e presença pastoral junto a pessoas e famílias em momentos de dor e despedida, Pe. Wesley Xavier Ramos escreve a partir da escuta e do acompanhamento espiritual.</p><blockquote className="mt-9 border-l border-gold pl-6 text-3xl leading-snug text-gold">“Este livro não nasceu da tentativa de explicar a dor. Nasceu da experiência de permanecer ao lado de quem sofre.”</blockquote></div></div></section>
 
-    <section id="pre-lancamento" className="bg-navy py-24 text-ivory sm:py-32"><div className="section-shell"><div className="grid items-center gap-14 border-y border-gold/40 py-14 lg:grid-cols-[1.2fr_.8fr]"><div><Eyebrow>Pré-lançamento</Eyebrow><h2 className="text-balance text-4xl sm:text-6xl">O primeiro exemplar pode ser seu antes do lançamento.</h2><p className="mt-7 max-w-2xl leading-8 text-ivory/80">O lançamento oficial acontecerá em 2 de novembro de 2026, no Dia de Finados. O pré-lançamento é uma oportunidade de garantir antecipadamente, por apenas R$ 29,90, seu exemplar impresso da primeira tiragem, que é limitada.</p><div className="mt-9"><PreorderButton label="Garantir meu exemplar"/></div></div><div className="border border-gold/50 p-8 text-center"><p className="text-xs uppercase tracking-[0.2em] text-gold">Pré-lançamento</p><p className="my-5 font-display text-6xl text-ivory">02<span className="block text-2xl">de novembro</span></p><div className="gold-rule"/><p className="mt-5 text-xs uppercase tracking-[0.18em] text-ivory/72">Lançamento oficial · Dia de Finados</p><p className="mt-5 font-display text-3xl text-gold">R$ 29,90</p></div></div></div></section>
+    <section id="pre-lancamento" className="bg-navy py-24 text-ivory sm:py-32"><div className="section-shell">
+      <div className="grid items-start gap-14 border-b border-gold/40 pb-14 lg:grid-cols-[1.2fr_.8fr]">
+        <div><Eyebrow>Pré-lançamento</Eyebrow><h2 className="text-balance text-4xl sm:text-6xl">O primeiro exemplar pode ser seu antes do lançamento.</h2><p className="mt-7 max-w-2xl leading-8 text-ivory/80">O lançamento oficial acontecerá em 2 de novembro de 2026, no Dia de Finados. O pré-lançamento é uma oportunidade de garantir antecipadamente, por apenas R$ 29,90, seu exemplar impresso da primeira tiragem, que é limitada.</p></div>
+        <div className="border border-gold/50 p-8 text-center"><p className="text-xs uppercase tracking-[0.2em] text-gold">Pré-lançamento</p><p className="my-5 font-display text-6xl text-ivory">02<span className="block text-2xl">de novembro</span></p><div className="gold-rule"/><p className="mt-5 text-xs uppercase tracking-[0.18em] text-ivory/72">Lançamento oficial · Dia de Finados</p><p className="mt-5 font-display text-3xl text-gold">R$ 29,90</p></div>
+      </div>
 
-    <section className="bg-ivory py-24 sm:py-32"><div className="section-shell"><div className="mx-auto max-w-2xl text-center"><Eyebrow>Como você vai receber o seu exemplar</Eyebrow><h2 className="text-balance text-4xl text-navy sm:text-5xl">Duas formas de participar do lançamento.</h2></div><div className="mt-14 grid gap-8 md:grid-cols-2"><div className="border border-gold/40 bg-background p-8"><Gift className="size-8 text-gold" strokeWidth={1.3}/><h3 className="mt-5 text-2xl text-navy">Presencial, no dia do lançamento</h3><p className="mt-4 leading-7 text-charcoal/80">No dia 2 de novembro de 2026, Dia de Finados, você pode retirar seu exemplar pessoalmente e participar da noite de autógrafos com o Pe. Wesley Xavier Ramos.</p></div><div className="border border-gold/40 bg-background p-8"><Anchor className="size-8 text-gold" strokeWidth={1.3}/><h3 className="mt-5 text-2xl text-navy">Pelo Correio, no conforto da sua casa</h3><p className="mt-4 leading-7 text-charcoal/80">Se não puder estar presente, seu exemplar será enviado pelo Correio após o lançamento oficial, com entrega em até 10 dias úteis a partir de 2 de novembro de 2026.</p></div></div></div></section>
+      <div className="py-14"><Eyebrow>Como você vai receber o seu exemplar</Eyebrow><h3 className="text-balance text-3xl sm:text-4xl">Escolha como prefere participar.</h3>
+        <div role="radiogroup" aria-label="Forma de recebimento do exemplar" className="mt-10 grid gap-6 md:grid-cols-2">
+          <button type="button" role="radio" aria-checked={delivery === "presencial"} onClick={() => setDelivery("presencial")} className={`flex flex-col items-start gap-3 border p-7 text-left transition-colors ${delivery === "presencial" ? "border-gold bg-gold/10" : "border-gold/30 bg-navy-soft hover:border-gold/60"}`}>
+            <span className="flex items-center gap-3"><span className={`flex size-5 items-center justify-center rounded-full border ${delivery === "presencial" ? "border-gold" : "border-ivory/40"}`}>{delivery === "presencial" && <span className="size-2.5 rounded-full bg-gold"/>}</span><Gift className="size-5 text-gold" strokeWidth={1.4}/></span>
+            <h4 className="text-xl">Presencial, no dia do lançamento</h4>
+            <p className="text-sm leading-6 text-ivory/72">Retire seu exemplar pessoalmente em 2 de novembro de 2026 e participe da noite de autógrafos com o Pe. Wesley Xavier Ramos.</p>
+          </button>
+          <button type="button" role="radio" aria-checked={delivery === "correio"} onClick={() => setDelivery("correio")} className={`flex flex-col items-start gap-3 border p-7 text-left transition-colors ${delivery === "correio" ? "border-gold bg-gold/10" : "border-gold/30 bg-navy-soft hover:border-gold/60"}`}>
+            <span className="flex items-center gap-3"><span className={`flex size-5 items-center justify-center rounded-full border ${delivery === "correio" ? "border-gold" : "border-ivory/40"}`}>{delivery === "correio" && <span className="size-2.5 rounded-full bg-gold"/>}</span><Anchor className="size-5 text-gold" strokeWidth={1.4}/></span>
+            <h4 className="text-xl">Pelo Correio, no conforto da sua casa</h4>
+            <p className="text-sm leading-6 text-ivory/72">Receba em casa, com entrega em até 10 dias úteis a partir de 2 de novembro de 2026, para quem não puder estar presente.</p>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex justify-center border-t border-gold/40 pt-14"><PreorderButton label="Garantir meu exemplar" href={`${PREORDER_URL}${delivery ? `?entrega=${delivery}` : ""}`}/></div>
+    </div></section>
 
     <section className="bg-ivory py-24 sm:py-32"><div className="section-shell mx-auto max-w-3xl text-center"><Flame className="mx-auto size-8 text-gold" strokeWidth={1.3}/><h2 className="mt-7 text-balance text-4xl text-navy sm:text-5xl">No Dia de Finados, uma palavra de esperança.</h2><p className="mt-7 leading-8 text-charcoal/80">2 de novembro de 2026, Dia de Finados, marca o lançamento oficial de um livro que nasceu para falar sobre aquilo que muitas famílias carregam no coração: a saudade de quem partiu. O Dia de Finados nos convida à memória, à oração e à esperança cristã.</p><p className="mt-5 leading-8 text-charcoal/80">Não para falar apenas sobre a morte. Mas para lembrar que, para quem crê, a história não termina na ausência.</p></div></section>
 
