@@ -67,7 +67,6 @@ function Index() {
             <Eyebrow>Coleção Âncora · Livro I</Eyebrow>
             <h1 className="text-balance text-5xl leading-[0.94] sm:text-6xl lg:text-7xl">A saudade pode permanecer.<br/><span className="font-script text-[1.18em] font-normal text-gold">Mas você não precisa</span><br/>caminhar sozinho.</h1>
             <p className="mt-7 max-w-xl text-base leading-7 text-ivory/80 sm:text-lg">Um livro de fé, acolhimento e esperança para quem está aprendendo a continuar depois de uma despedida.</p>
-            <p className="mt-4 font-display text-2xl text-gold">Pré-lançamento a partir de R$ 29,90</p>
             <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><PreorderButton/><Button asChild variant="goldOutline" size="lg" className="h-13 w-full text-xs uppercase tracking-[0.12em] sm:w-auto"><a href="#o-livro">Conhecer o livro</a></Button></div>
             <p className="mt-5 text-xs text-ivory/72">Pré-lançamento · Lançamento oficial em 2 de novembro · Dia de Finados</p>
           </div>
