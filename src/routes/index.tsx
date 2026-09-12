@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Anchor, ArrowDown, BookOpen, Cross, Flame, Gift, Heart, Quote } from "lucide-react";
+import { Anchor, ArrowDown, Flame, Gift, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import bookCover from "@/assets/book-cover.png.asset.json";
 import horizon from "@/assets/anchor-horizon.jpg";
 import contemplativeSea from "@/assets/contemplative-sea.jpg";
 import bibleLantern from "@/assets/bible-lantern.jpg";
+import padreWesley from "@/assets/padre-wesley.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -96,10 +97,7 @@ function Index() {
 
     <section className="bg-background py-24 sm:py-32"><div className="section-shell grid items-center gap-14 lg:grid-cols-2"><img src={bibleLantern} alt="Livro aberto, vela e flores brancas" loading="lazy" width={1600} height={1072} className="aspect-[4/3] w-full object-cover"/><div><Eyebrow>Um livro para ser guardado</Eyebrow><h2 className="text-4xl text-navy sm:text-5xl">Há livros que você lê.<br/>E há livros que permanecem com você.</h2><p className="mt-7 leading-8 text-charcoal/80">Quando a dor aperta, algumas páginas podem ser revisitadas. Quando uma data especial chegar, algumas palavras podem ganhar outro significado. Quando a saudade voltar, você poderá abrir novamente este livro.</p><p className="mt-7 font-display text-2xl text-gold">Para ler, guardar, reler e compartilhar esperança.</p></div></div></section>
 
-    <section className="bg-navy-soft py-24 text-ivory sm:py-32"><div className="section-shell grid gap-12 lg:grid-cols-[.7fr_1.3fr]">{/* TODO: quando houver uma foto real do Pe. Wesley, substitua este bloco por
-    <img src={authorPhoto} alt="Pe. Wesley Xavier Ramos" className="aspect-[4/5] w-full object-cover ring-1 ring-gold/40" />
-    mantendo o import no topo do arquivo. */}
-      <div className="flex aspect-[4/5] items-center justify-center border border-gold/30 bg-navy"><div className="text-center"><Cross className="mx-auto size-10 text-gold" strokeWidth={1}/><p className="mt-5 font-display text-2xl">Pe. Wesley<br/>Xavier Ramos</p></div></div><div className="self-center"><Eyebrow>Sobre o autor</Eyebrow><h2 className="text-4xl sm:text-5xl">Presença, escuta, silêncio e fé.</h2><p className="mt-7 max-w-2xl text-lg leading-9 text-ivory/80">Sacerdote e presença pastoral junto a pessoas e famílias em momentos de dor e despedida, Pe. Wesley Xavier Ramos escreve a partir da escuta e do acompanhamento espiritual.</p><blockquote className="mt-9 border-l border-gold pl-6 text-3xl leading-snug text-gold">“Este livro não nasceu da tentativa de explicar a dor. Nasceu da experiência de permanecer ao lado de quem sofre.”</blockquote></div></div></section>
+    <section className="bg-navy-soft py-24 text-ivory sm:py-32"><div className="section-shell grid gap-12 lg:grid-cols-[.7fr_1.3fr]"><img src={padreWesley} alt="Pe. Wesley Xavier Ramos em oração" loading="lazy" className="aspect-[4/5] w-full object-cover object-top ring-1 ring-gold/40"/><div className="self-center"><Eyebrow>Sobre o autor</Eyebrow><h2 className="text-4xl sm:text-5xl">Presença, escuta, silêncio e fé.</h2><p className="mt-7 max-w-2xl text-lg leading-9 text-ivory/80">Sacerdote e presença pastoral junto a pessoas e famílias em momentos de dor e despedida, Pe. Wesley Xavier Ramos escreve a partir da escuta e do acompanhamento espiritual.</p><blockquote className="mt-9 border-l border-gold pl-6 text-3xl leading-snug text-gold">“Este livro não nasceu da tentativa de explicar a dor. Nasceu da experiência de permanecer ao lado de quem sofre.”</blockquote></div></div></section>
 
     <section id="pre-lancamento" className="bg-navy py-24 text-ivory sm:py-32"><div className="section-shell"><div className="grid items-center gap-14 border-y border-gold/40 py-14 lg:grid-cols-[1.2fr_.8fr]"><div><Eyebrow>Pré-lançamento</Eyebrow><h2 className="text-balance text-4xl sm:text-6xl">O primeiro exemplar pode ser seu antes do lançamento.</h2><p className="mt-7 max-w-2xl leading-8 text-ivory/80">O lançamento oficial acontecerá em 1º de novembro, véspera do Dia de Finados. O pré-lançamento é uma oportunidade de garantir antecipadamente seu exemplar da primeira tiragem, que é limitada.</p><div className="mt-9"><PreorderButton label="Garantir meu exemplar"/></div></div><div className="border border-gold/50 p-8 text-center"><p className="text-xs uppercase tracking-[0.2em] text-gold">Pré-lançamento</p><p className="my-5 font-display text-6xl text-ivory">01<span className="block text-2xl">de novembro</span></p><div className="gold-rule"/><p className="mt-5 text-xs uppercase tracking-[0.18em] text-ivory/72">Lançamento oficial · Tiragem limitada</p></div></div></div></section>
 
