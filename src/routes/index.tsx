@@ -80,17 +80,17 @@ function Index() {
       </div>
     </section>
 
+    <section id="o-livro" className="bg-ivory py-24 sm:py-32"><div className="section-shell grid items-center gap-14 lg:grid-cols-[.72fr_1.28fr]">
+      <div className="mx-auto w-[min(65vw,290px)]"><img src={bookCover.url} alt="Livro Quando a Saudade Permanece" loading="lazy" width={853} height={1280} className="aspect-[2/3] w-full object-cover shadow-xl ring-1 ring-charcoal/15"/></div>
+      <div><Eyebrow>Quando a Saudade Permanece</Eyebrow><h2 className="text-balance text-4xl text-navy sm:text-5xl">Um livro para caminhar ao lado de quem sente saudade.</h2><div className="mt-7 space-y-5 leading-8 text-charcoal/82"><p>Não foi escrito para oferecer respostas fáceis diante da dor. Foi escrito para oferecer presença.</p><p>Para lembrar que chorar não é falta de fé. Que sentir saudade não significa estar preso ao passado. E que a esperança cristã não apaga a dor — ela nos ajuda a atravessá-la.</p></div><div className="mt-9 border-y border-gold/40 py-7 font-display text-2xl text-navy">Não é um livro para ensinar você a esquecer.<br/><span className="text-gold">É um livro para ajudar você a continuar.</span></div></div>
+    </div></section>
+
     <section className="bg-navy py-24 text-ivory sm:py-32">
       <div className="section-shell grid items-center gap-14 lg:grid-cols-2">
         <div><Eyebrow>Antes de tudo, acolher</Eyebrow><h2 className="text-balance text-4xl sm:text-5xl">Há saudades que não desaparecem.</h2><div className="mt-7 space-y-4 text-base leading-8 text-ivory/80"><p>Algumas despedidas mudam a nossa maneira de olhar para a vida.</p><p>Ficam as lembranças. Ficam as perguntas. Ficam palavras que gostaríamos de ter dito. Ficam momentos que gostaríamos de reviver. E fica a saudade.</p></div><blockquote className="mt-8 border-l border-gold pl-6 text-2xl leading-snug text-gold">Você não precisa esquecer para continuar.<br/>Pode aprender a caminhar com a saudade.</blockquote></div>
         <figure className="relative"><img src={contemplativeSea} alt="Pessoa observa o mar e a luz no horizonte" loading="lazy" width={1600} height={1008} className="aspect-[4/3] w-full object-cover grayscale-[20%]"/><figcaption className="absolute bottom-0 left-0 bg-navy/85 px-5 py-3 font-display text-lg text-ivory">Este livro parte de uma resposta diferente.</figcaption></figure>
       </div>
     </section>
-
-    <section id="o-livro" className="bg-ivory py-24 sm:py-32"><div className="section-shell grid items-center gap-14 lg:grid-cols-[.72fr_1.28fr]">
-      <div className="mx-auto w-[min(65vw,290px)]"><img src={bookCover.url} alt="Livro Quando a Saudade Permanece" loading="lazy" width={853} height={1280} className="aspect-[2/3] w-full object-cover shadow-xl ring-1 ring-charcoal/15"/></div>
-      <div><Eyebrow>Quando a Saudade Permanece</Eyebrow><h2 className="text-balance text-4xl text-navy sm:text-5xl">Um livro para caminhar ao lado de quem sente saudade.</h2><div className="mt-7 space-y-5 leading-8 text-charcoal/82"><p>Não foi escrito para oferecer respostas fáceis diante da dor. Foi escrito para oferecer presença.</p><p>Para lembrar que chorar não é falta de fé. Que sentir saudade não significa estar preso ao passado. E que a esperança cristã não apaga a dor — ela nos ajuda a atravessá-la.</p></div><div className="mt-9 border-y border-gold/40 py-7 font-display text-2xl text-navy">Não é um livro para ensinar você a esquecer.<br/><span className="text-gold">É um livro para ajudar você a continuar.</span></div></div>
-    </div></section>
 
     <section className="bg-background py-24 sm:py-32"><div className="section-shell"><div className="mx-auto max-w-2xl text-center"><Eyebrow>O itinerário do livro</Eyebrow><h2 className="text-4xl text-navy sm:text-5xl">Uma caminhada da dor à esperança.</h2></div><div className="relative mt-16 grid gap-0 border-y border-gold/40 md:grid-cols-5">{journey.map(([n,t,d])=><article key={n} className="border-b border-gold/25 px-6 py-9 last:border-0 md:border-r md:border-b-0"><span className="font-display text-3xl text-gold/60">{n}</span><h3 className="mt-4 text-2xl text-navy">{t}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{d}</p></article>)}</div></div></section>
 
