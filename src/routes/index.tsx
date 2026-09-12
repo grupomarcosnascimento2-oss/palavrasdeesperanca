@@ -58,12 +58,11 @@ function Index() {
       <div className="absolute inset-0 image-shade"/>
       <div className="section-shell relative z-10 flex min-h-[94svh] flex-col justify-between py-6 sm:py-10">
         <header className="flex items-center justify-between border-b border-gold/30 pb-4">
-          <div className="flex items-center gap-3"><AnchorMark small/><div><p className="font-display text-lg leading-none">Coleção Âncora</p><p className="mt-1 text-[9px] uppercase tracking-[0.2em] text-gold">Palavras de esperança</p></div></div>
+          <div className="flex items-center gap-3"><AnchorMark small/><div><p className="font-display text-lg leading-none">Coleção Âncora</p><p className="mt-1 text-[9px] uppercase tracking-[0.2em] text-gold">Palavras de esperança · Livro I</p></div></div>
           <a href="#o-livro" className="hidden items-center gap-2 text-xs uppercase tracking-[0.16em] text-ivory/80 sm:flex">Conhecer o livro <ArrowDown className="size-4"/></a>
         </header>
         <div className="grid items-center gap-10 py-12">
           <div className="max-w-2xl">
-            <Eyebrow>Coleção Âncora · Livro I</Eyebrow>
             <h1 className="text-balance text-5xl leading-[0.94] sm:text-6xl lg:text-7xl">A saudade pode permanecer.<br/><span className="font-script text-[1.18em] font-normal text-gold">Mas você não precisa</span><br/>caminhar sozinho.</h1>
             <p className="mt-7 max-w-xl text-base leading-7 text-ivory/80 sm:text-lg">Um livro de fé, acolhimento e esperança para quem está aprendendo a continuar depois de uma despedida.</p>
             <div className="my-8 mx-auto w-[min(78vw,380px)]"><img src={bookCover} alt="Capa do livro Quando a Saudade Permanece" width={853} height={1280} className="w-full object-contain drop-shadow-2xl"/></div>
