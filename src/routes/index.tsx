@@ -42,6 +42,8 @@ function PreorderButton({ label = "Quero garantir meu exemplar", outline = false
 
 function Index() {
   const [delivery, setDelivery] = useState<"presencial" | "correio">("presencial");
+  const price = delivery === "correio" ? "R$ 49,90" : "R$ 29,90";
+  const priceNote = delivery === "correio" ? "Envio pelo Correio · frete grátis" : "Retirada no dia do lançamento";
   const journey = [
     ["01", "Dor", "Acolher a dor da despedida sem culpa."],
     ["02", "Memória", "Guardar aquilo que o amor deixou."],
@@ -65,7 +67,7 @@ function Index() {
             <Eyebrow>Coleção Âncora · Livro I</Eyebrow>
             <h1 className="text-balance text-5xl leading-[0.94] sm:text-6xl lg:text-7xl">A saudade pode permanecer.<br/><span className="font-script text-[1.18em] font-normal text-gold">Mas você não precisa</span><br/>caminhar sozinho.</h1>
             <p className="mt-7 max-w-xl text-base leading-7 text-ivory/80 sm:text-lg">Um livro de fé, acolhimento e esperança para quem está aprendendo a continuar depois de uma despedida.</p>
-            <p className="mt-4 font-display text-2xl text-gold">Pré-lançamento por R$ 29,90</p>
+            <p className="mt-4 font-display text-2xl text-gold">Pré-lançamento a partir de R$ 29,90</p>
             <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><PreorderButton/><Button asChild variant="goldOutline" size="lg" className="h-13 w-full text-xs uppercase tracking-[0.12em] sm:w-auto"><a href="#o-livro">Conhecer o livro</a></Button></div>
             <p className="mt-5 text-xs text-ivory/72">Pré-lançamento · Lançamento oficial em 2 de novembro · Dia de Finados</p>
           </div>
@@ -104,8 +106,8 @@ function Index() {
 
     <section id="pre-lancamento" className="bg-navy py-24 text-ivory sm:py-32"><div className="section-shell">
       <div className="grid items-start gap-14 border-b border-gold/40 pb-14 lg:grid-cols-[1.2fr_.8fr]">
-        <div><Eyebrow>Pré-lançamento</Eyebrow><h2 className="text-balance text-4xl sm:text-6xl">O primeiro exemplar pode ser seu antes do lançamento.</h2><p className="mt-7 max-w-2xl leading-8 text-ivory/80">O lançamento oficial acontecerá em 2 de novembro de 2026, no Dia de Finados. O pré-lançamento é uma oportunidade de garantir antecipadamente, por apenas R$ 29,90, seu exemplar impresso da primeira tiragem, que é limitada.</p></div>
-        <div className="border border-gold/50 p-8 text-center"><p className="text-xs uppercase tracking-[0.2em] text-gold">Pré-lançamento</p><p className="my-5 font-display text-6xl text-ivory">02<span className="block text-2xl">de novembro</span></p><div className="gold-rule"/><p className="mt-5 text-xs uppercase tracking-[0.18em] text-ivory/72">Lançamento oficial · Dia de Finados</p><p className="mt-5 font-display text-3xl text-gold">R$ 29,90</p></div>
+        <div><Eyebrow>Pré-lançamento</Eyebrow><h2 className="text-balance text-4xl sm:text-6xl">O primeiro exemplar pode ser seu antes do lançamento.</h2><p className="mt-7 max-w-2xl leading-8 text-ivory/80">O lançamento oficial acontecerá em 2 de novembro de 2026, no Dia de Finados. O pré-lançamento é uma oportunidade de garantir antecipadamente seu exemplar impresso da primeira tiragem, que é limitada — por R$ 29,90 na retirada presencial ou R$ 49,90 com envio pelo Correio e frete grátis.</p></div>
+        <div className="border border-gold/50 p-8 text-center"><p className="text-xs uppercase tracking-[0.2em] text-gold">Pré-lançamento</p><p className="my-5 font-display text-6xl text-ivory">02<span className="block text-2xl">de novembro</span></p><div className="gold-rule"/><p className="mt-5 text-xs uppercase tracking-[0.18em] text-ivory/72">Lançamento oficial · Dia de Finados</p><p className="mt-5 font-display text-3xl text-gold">{price}</p><p className="mt-1 text-xs uppercase tracking-[0.16em] text-ivory/72">{priceNote}</p></div>
       </div>
 
       <div className="py-14"><Eyebrow>Como você vai receber o seu exemplar</Eyebrow><h3 className="text-balance text-3xl sm:text-4xl">Escolha como prefere participar.</h3>
@@ -113,17 +115,19 @@ function Index() {
           <button type="button" role="radio" aria-checked={delivery === "presencial"} onClick={() => setDelivery("presencial")} className={`flex flex-col items-start gap-3 border p-7 text-left transition-colors ${delivery === "presencial" ? "border-gold bg-gold/10" : "border-gold/30 bg-navy-soft hover:border-gold/60"}`}>
             <span className="flex items-center gap-3"><span className={`flex size-5 items-center justify-center rounded-full border ${delivery === "presencial" ? "border-gold" : "border-ivory/40"}`}>{delivery === "presencial" && <span className="size-2.5 rounded-full bg-gold"/>}</span><Gift className="size-5 text-gold" strokeWidth={1.4}/></span>
             <h4 className="text-xl">Presencial, no dia do lançamento</h4>
+            <p className="font-display text-2xl text-gold">R$ 29,90</p>
             <p className="text-sm leading-6 text-ivory/72">Retire seu exemplar pessoalmente em 2 de novembro de 2026 e participe da noite de autógrafos com o Pe. Wesley Xavier Ramos.</p>
           </button>
           <button type="button" role="radio" aria-checked={delivery === "correio"} onClick={() => setDelivery("correio")} className={`flex flex-col items-start gap-3 border p-7 text-left transition-colors ${delivery === "correio" ? "border-gold bg-gold/10" : "border-gold/30 bg-navy-soft hover:border-gold/60"}`}>
             <span className="flex items-center gap-3"><span className={`flex size-5 items-center justify-center rounded-full border ${delivery === "correio" ? "border-gold" : "border-ivory/40"}`}>{delivery === "correio" && <span className="size-2.5 rounded-full bg-gold"/>}</span><Anchor className="size-5 text-gold" strokeWidth={1.4}/></span>
             <h4 className="text-xl">Pelo Correio, no conforto da sua casa</h4>
+            <p className="font-display text-2xl text-gold">R$ 49,90 <span className="text-sm font-sans uppercase tracking-[0.1em] text-ivory/72">frete grátis</span></p>
             <p className="text-sm leading-6 text-ivory/72">Receba em casa, com entrega em até 10 dias úteis a partir de 2 de novembro de 2026, para quem não puder estar presente.</p>
           </button>
         </div>
       </div>
 
-      <div className="flex justify-center border-t border-gold/40 pt-14"><PreorderButton label="Garantir meu exemplar" href={`${PREORDER_URL}${delivery ? `?entrega=${delivery}` : ""}`}/></div>
+      <div className="flex flex-col items-center gap-3 border-t border-gold/40 pt-14"><PreorderButton label={`Garantir meu exemplar · ${price}`} href={`${PREORDER_URL}?entrega=${delivery}`}/></div>
     </div></section>
 
     <section className="bg-ivory py-24 sm:py-32"><div className="section-shell mx-auto max-w-3xl text-center"><Flame className="mx-auto size-8 text-gold" strokeWidth={1.3}/><h2 className="mt-7 text-balance text-4xl text-navy sm:text-5xl">No Dia de Finados, uma palavra de esperança.</h2><p className="mt-7 leading-8 text-charcoal/80">2 de novembro de 2026, Dia de Finados, marca o lançamento oficial de um livro que nasceu para falar sobre aquilo que muitas famílias carregam no coração: a saudade de quem partiu. O Dia de Finados nos convida à memória, à oração e à esperança cristã.</p><p className="mt-5 leading-8 text-charcoal/80">Não para falar apenas sobre a morte. Mas para lembrar que, para quem crê, a história não termina na ausência.</p></div></section>
