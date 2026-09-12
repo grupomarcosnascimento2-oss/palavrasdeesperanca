@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Anchor, ArrowDown, Flame, Gift, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import bookCover from "@/assets/book-cover.png.asset.json";
+import bookCover from "@/assets/book-cover.png";
 import horizon from "@/assets/anchor-horizon.jpg";
 import contemplativeSea from "@/assets/contemplative-sea.jpg";
 import bibleLantern from "@/assets/bible-lantern.jpg";
@@ -75,7 +75,7 @@ function Index() {
     </section>
 
     <section id="o-livro" className="bg-ivory py-24 sm:py-32"><div className="section-shell grid items-center gap-14 lg:grid-cols-[.72fr_1.28fr]">
-      <div className="mx-auto w-[min(65vw,290px)]"><img src={bookCover.url} alt="Livro Quando a Saudade Permanece" loading="lazy" width={853} height={1280} className="aspect-[2/3] w-full object-cover shadow-xl ring-1 ring-charcoal/15"/></div>
+      <div className="mx-auto w-[min(65vw,290px)]"><img src={bookCover} alt="Livro Quando a Saudade Permanece" loading="lazy" width={853} height={1280} className="aspect-[2/3] w-full object-cover shadow-xl ring-1 ring-charcoal/15"/></div>
       <div><Eyebrow>Quando a Saudade Permanece</Eyebrow><h2 className="text-balance text-4xl text-navy sm:text-5xl">Um livro para caminhar ao lado de quem sente saudade.</h2><div className="mt-7 space-y-5 leading-8 text-charcoal/82"><p>Não foi escrito para oferecer respostas fáceis diante da dor. Foi escrito para oferecer presença.</p><p>Para lembrar que chorar não é falta de fé. Que sentir saudade não significa estar preso ao passado. E que a esperança cristã não apaga a dor — ela nos ajuda a atravessá-la.</p></div><div className="mt-9 border-y border-gold/40 py-7 font-display text-2xl text-navy">Não é um livro para ensinar você a esquecer.<br/><span className="text-gold">É um livro para ajudar você a continuar.</span></div></div>
     </div></section>
 
