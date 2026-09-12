@@ -116,7 +116,7 @@ function Index() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-6 border-t border-gold/40 pt-14 text-center"><Gift className="size-10 text-gold" strokeWidth={1}/><h3 className="max-w-xl text-balance text-2xl sm:text-3xl">Talvez você esteja procurando uma forma de dizer: "Estou aqui com você."</h3><p className="max-w-xl leading-7 text-ivory/80">Às vezes não sabemos o que dizer. Um livro pode ser uma forma silenciosa de presença. Uma lembrança. Um gesto. Uma palavra de fé.</p><PreorderButton label={`Garantir meu exemplar · ${price}`} href={`${PREORDER_URL}?entrega=${delivery}`}/></div>
+      <div className="flex flex-col items-center gap-6 border-t border-gold/40 pt-14 text-center"><PreorderButton label={`Garantir meu exemplar · ${price}`} href={`${PREORDER_URL}?entrega=${delivery}`}/></div>
     </div></section>
 
     <section className="bg-ivory py-24 sm:py-32"><div className="section-shell mx-auto max-w-3xl text-center"><Flame className="mx-auto size-8 text-gold" strokeWidth={1.3}/><h2 className="mt-7 text-balance text-4xl text-navy sm:text-5xl">No Dia de Finados, uma palavra de esperança.</h2><p className="mt-7 leading-8 text-charcoal/80">2 de novembro de 2026, Dia de Finados, marca o lançamento oficial de um livro que nasceu para falar sobre aquilo que muitas famílias carregam no coração: a saudade de quem partiu. O Dia de Finados nos convida à memória, à oração e à esperança cristã.</p><p className="mt-5 leading-8 text-charcoal/80">Não para falar apenas sobre a morte. Mas para lembrar que, para quem crê, a história não termina na ausência.</p></div></section>
