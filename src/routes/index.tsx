@@ -62,7 +62,7 @@ function Index() {
           <div className="flex items-center gap-3"><AnchorMark small/><div><p className="font-display text-lg leading-none">Coleção Âncora</p><p className="mt-1 text-[9px] uppercase tracking-[0.2em] text-gold">Palavras de esperança</p></div></div>
           <a href="#o-livro" className="hidden items-center gap-2 text-xs uppercase tracking-[0.16em] text-ivory/80 sm:flex">Conhecer o livro <ArrowDown className="size-4"/></a>
         </header>
-        <div className="grid items-center gap-10 py-12 lg:grid-cols-[1.15fr_.85fr]">
+        <div className="grid items-center gap-10 py-12">
           <div className="max-w-2xl">
             <Eyebrow>Coleção Âncora · Livro I</Eyebrow>
             <h1 className="text-balance text-5xl leading-[0.94] sm:text-6xl lg:text-7xl">A saudade pode permanecer.<br/><span className="font-script text-[1.18em] font-normal text-gold">Mas você não precisa</span><br/>caminhar sozinho.</h1>
@@ -70,11 +70,6 @@ function Index() {
             <p className="mt-4 font-display text-2xl text-gold">Pré-lançamento a partir de R$ 29,90</p>
             <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center"><PreorderButton/><Button asChild variant="goldOutline" size="lg" className="h-13 w-full text-xs uppercase tracking-[0.12em] sm:w-auto"><a href="#o-livro">Conhecer o livro</a></Button></div>
             <p className="mt-5 text-xs text-ivory/72">Pré-lançamento · Lançamento oficial em 2 de novembro · Dia de Finados</p>
-          </div>
-          <div className="book-float relative mx-auto w-[min(68vw,330px)] lg:w-[360px] [perspective:900px]">
-            <div className="absolute -inset-6 bg-gold/10 blur-3xl"/>
-            <img src={bookCover.url} alt="Capa do livro Quando a Saudade Permanece" className="relative aspect-[2/3] w-full object-cover shadow-2xl ring-1 ring-gold/50" width={853} height={1280}/>
-            <span className="absolute -right-5 bottom-8 h-[94%] w-5 origin-left skew-y-[-22deg] bg-charcoal opacity-80" aria-hidden="true"/>
           </div>
         </div>
       </div>
