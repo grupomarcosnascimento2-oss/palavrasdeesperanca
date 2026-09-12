@@ -137,6 +137,5 @@ function Index() {
 
     <footer className="bg-navy py-14 text-center text-ivory"><div className="section-shell"><Divider/><p className="mt-7 font-display text-2xl">Coleção Âncora</p><p className="mt-2 text-xs uppercase tracking-[0.18em] text-gold">Palavras de esperança para os caminhos da vida</p><p className="mt-8 text-sm text-ivory/65">Livro I · Quando a Saudade Permanece · Pe. Wesley Xavier Ramos</p><a href="https://wa.me/556191119324" target="_blank" rel="noreferrer" className="mt-4 inline-block text-sm text-gold underline-offset-4 hover:underline">Falar com Padre Wesley</a><p className="mt-3 text-xs text-ivory/50">© 2026. Todos os direitos reservados.</p></div></footer>
 
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-gold/40 bg-navy/95 p-3 backdrop-blur md:hidden"><PreorderButton label="Garantir meu exemplar"/></div>
   </main>;
 }
