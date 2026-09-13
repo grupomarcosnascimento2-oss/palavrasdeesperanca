@@ -13,7 +13,10 @@ const PRICES = {
 const buyerSchema = z.object({
   nome: z.string().min(3, "Informe o nome completo"),
   email: z.string().email("E-mail inválido"),
-  telefone: z.string().min(10, "Informe um telefone válido"),
+  telefone: z
+    .string()
+    .transform((v) => v.replace(/\D/g, ""))
+    .refine((v) => v.length === 10 || v.length === 11, "Informe um telefone válido, com DDD"),
   cpf: z
     .string()
     .transform((v) => v.replace(/\D/g, ""))

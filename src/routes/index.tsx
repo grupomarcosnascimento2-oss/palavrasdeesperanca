@@ -49,6 +49,20 @@ function PreorderButton({ label = "Quero garantir meu exemplar", outline = false
   return <Button asChild variant={outline ? "goldOutline" : "gold"} size="lg" className="h-13 w-full px-6 text-xs font-bold uppercase tracking-[0.12em] sm:w-auto"><a href={href}><Anchor className="size-4" />{label}</a></Button>;
 }
 
+function parseCheckoutError(err: unknown): string {
+  const fallback = "Não foi possível iniciar o pagamento. Confira os dados e tente novamente.";
+  const message = err instanceof Error ? err.message : String(err);
+  try {
+    const parsed = JSON.parse(message);
+    if (Array.isArray(parsed) && parsed.every((i) => typeof i?.message === "string")) {
+      return Array.from(new Set(parsed.map((i: { message: string }) => i.message))).join(" ");
+    }
+  } catch {
+    // não era um erro de validação em JSON; segue com a mensagem normal
+  }
+  return message || fallback;
+}
+
 function Index() {
   const navigate = useNavigate();
   const [delivery, setDelivery] = useState<"presencial" | "correio">("presencial");
@@ -94,9 +108,7 @@ function Index() {
       navigate({ to: "/pagamento", search: { paymentId: result.paymentId, entrega: delivery } });
     } catch (err) {
       console.error(err);
-      setCheckoutError(
-        err instanceof Error ? err.message : "Não foi possível iniciar o pagamento. Tente novamente em instantes.",
-      );
+      setCheckoutError(parseCheckoutError(err));
       setSubmitting(false);
     }
   }
@@ -188,12 +200,12 @@ function Index() {
               </div>
               <div>
                 <Label htmlFor="telefone" className="text-ivory/85">WhatsApp / telefone</Label>
-                <Input id="telefone" required placeholder="61999999999" value={telefone} onChange={(e) => setTelefone(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+                <Input id="telefone" required inputMode="numeric" minLength={10} maxLength={11} placeholder="61999999999 (só números, com DDD)" value={telefone} onChange={(e) => setTelefone(e.target.value.replace(/\D/g, "").slice(0, 11))} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
               </div>
             </div>
             <div>
               <Label htmlFor="cpf" className="text-ivory/85">CPF</Label>
-              <Input id="cpf" required placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+              <Input id="cpf" required inputMode="numeric" minLength={11} maxLength={11} placeholder="00000000000 (só números)" value={cpf} onChange={(e) => setCpf(e.target.value.replace(/\D/g, "").slice(0, 11))} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
             </div>
           </div>
 
@@ -203,7 +215,7 @@ function Index() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="cep" className="text-ivory/85">CEP</Label>
-                  <Input id="cep" required placeholder="00000-000" value={cep} onChange={(e) => setCep(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+                  <Input id="cep" required inputMode="numeric" minLength={8} maxLength={8} placeholder="00000000 (só números)" value={cep} onChange={(e) => setCep(e.target.value.replace(/\D/g, "").slice(0, 8))} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
                 </div>
                 <div>
                   <Label htmlFor="numero" className="text-ivory/85">Número</Label>
