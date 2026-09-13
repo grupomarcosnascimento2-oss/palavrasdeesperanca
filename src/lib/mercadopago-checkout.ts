@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { MercadoPagoConfig, Preference } from "mercadopago";
+import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 // Preços do pré-lançamento. Mantidos aqui (servidor) como fonte da verdade,
@@ -39,19 +40,12 @@ const checkoutInputSchema = z.discriminatedUnion("entrega", [
 
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;
 
-// IDs de payment_type_id usados pelo Mercado Pago no Brasil. O PIX é
-// categorizado como "bank_transfer". Ajuste aqui se o comportamento na sua
-// conta divergir (confira em Mercado Pago > Meios de pagamento habilitados).
-const ALL_NON_PIX_TYPES = ["credit_card", "debit_card", "prepaid_card", "ticket", "atm"];
-
-function getExcludedPaymentTypes(entrega: "presencial" | "correio") {
-  if (entrega === "presencial") {
-    // Só PIX habilitado.
-    return ALL_NON_PIX_TYPES.map((id) => ({ id }));
-  }
-  // PIX + cartão de crédito habilitados; exclui os demais.
-  return ALL_NON_PIX_TYPES.filter((id) => id !== "credit_card").map((id) => ({ id }));
-}
+// Esta preferência (Checkout Pro) agora é usada apenas para o pagamento com
+// CARTÃO DE CRÉDITO (opção disponível só para entrega=correio). O PIX passou a
+// ser gerado diretamente na nossa página via Payments API (ver
+// createPixPayment), para evitar o checkout hospedado do Mercado Pago — onde
+// o botão "Criar Pix" ficou instável em testes.
+const ALL_NON_CARD_TYPES = ["bank_transfer", "debit_card", "prepaid_card", "ticket", "atm"];
 
 function getBaseUrl() {
   // Configure SITE_URL nas variáveis de ambiente com a URL pública final do site
@@ -110,8 +104,8 @@ export const createCheckoutPreference = createServerFn({ method: "POST" })
             : {}),
         },
         payment_methods: {
-          excluded_payment_types: getExcludedPaymentTypes(data.entrega),
-          installments: data.entrega === "correio" ? 3 : 1,
+          excluded_payment_types: ALL_NON_CARD_TYPES.map((id) => ({ id })),
+          installments: 3,
         },
         metadata: {
           entrega: data.entrega,
@@ -143,4 +137,93 @@ export const createCheckoutPreference = createServerFn({ method: "POST" })
     }
 
     return { initPoint: result.init_point };
+  });
+
+// Cria o pagamento PIX diretamente via Payments API (Checkout Transparente).
+// Retorna o código "copia e cola" e o QR code em base64 para exibir na própria
+// página, sem redirecionar o cliente para o Mercado Pago.
+export const createPixPayment = createServerFn({ method: "POST" })
+  .validator((input: unknown) => checkoutInputSchema.parse(input))
+  .handler(async ({ data }) => {
+    const accessToken = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+    if (!accessToken) {
+      throw new Error(
+        "MERCADOPAGO_ACCESS_TOKEN não configurado nas variáveis de ambiente do projeto.",
+      );
+    }
+
+    const price = PRICES[data.entrega];
+    const client = new MercadoPagoConfig({ accessToken });
+    const payment = new Payment(client);
+
+    const [nomeFirst, ...nomeRest] = data.comprador.nome.trim().split(/\s+/);
+    const sobrenome = nomeRest.join(" ");
+
+    const result = await payment.create({
+      body: {
+        transaction_amount: price,
+        description:
+          data.entrega === "presencial"
+            ? "Quando a Saudade Permanece — retirada presencial no lançamento oficial"
+            : "Quando a Saudade Permanece — envio pelo Correio (frete grátis)",
+        payment_method_id: "pix",
+        payer: {
+          email: data.comprador.email,
+          first_name: nomeFirst ?? data.comprador.nome,
+          ...(sobrenome ? { last_name: sobrenome } : {}),
+          identification: { type: "CPF", number: data.comprador.cpf },
+        },
+        metadata: {
+          entrega: data.entrega,
+          telefone: data.comprador.telefone,
+          ...(data.entrega === "correio"
+            ? {
+                cep: data.endereco.cep,
+                rua: data.endereco.rua,
+                numero: data.endereco.numero,
+                complemento: data.endereco.complemento ?? "",
+                bairro: data.endereco.bairro,
+                cidade: data.endereco.cidade,
+                uf: data.endereco.uf,
+              }
+            : {}),
+        },
+      },
+      requestOptions: { idempotencyKey: randomUUID() },
+    });
+
+    const qrCode = result.point_of_interaction?.transaction_data?.qr_code;
+    const qrCodeBase64 = result.point_of_interaction?.transaction_data?.qr_code_base64;
+
+    if (!result.id || !qrCode) {
+      throw new Error("Mercado Pago não retornou o código Pix (qr_code).");
+    }
+
+    return {
+      paymentId: String(result.id),
+      status: result.status ?? "pending",
+      qrCode,
+      qrCodeBase64: qrCodeBase64 ?? null,
+    };
+  });
+
+const paymentIdSchema = z.object({ paymentId: z.string().min(1) });
+
+// Consulta o status atual de um pagamento (usado para o polling da tela de
+// pagamento saber quando o Pix foi confirmado).
+export const getPaymentStatus = createServerFn({ method: "POST" })
+  .validator((input: unknown) => paymentIdSchema.parse(input))
+  .handler(async ({ data }) => {
+    const accessToken = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+    if (!accessToken) {
+      throw new Error(
+        "MERCADOPAGO_ACCESS_TOKEN não configurado nas variáveis de ambiente do projeto.",
+      );
+    }
+
+    const client = new MercadoPagoConfig({ accessToken });
+    const payment = new Payment(client);
+    const result = await payment.get({ id: data.paymentId });
+
+    return { status: result.status ?? "pending" };
   });

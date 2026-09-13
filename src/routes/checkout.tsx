@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { Anchor, Loader2 } from "lucide-react";
+import { Anchor, CreditCard, Loader2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createCheckoutPreference } from "@/lib/mercadopago-checkout";
+import { createCheckoutPreference, createPixPayment } from "@/lib/mercadopago-checkout";
 
 const searchSchema = z.object({
   entrega: z.enum(["presencial", "correio"]).catch("presencial"),
@@ -27,6 +27,7 @@ const UFS = [
 
 function CheckoutPage() {
   const { entrega } = Route.useSearch();
+  const navigate = useNavigate();
   const price = entrega === "correio" ? "R$ 49,90" : "R$ 29,90";
   const priceNote =
     entrega === "correio" ? "Envio pelo Correio · frete grátis" : "Retirada no dia do lançamento";
@@ -43,6 +44,9 @@ function CheckoutPage() {
   const [cidade, setCidade] = useState("");
   const [uf, setUf] = useState("");
 
+  // Só relevante quando entrega === "correio" (presencial é sempre Pix).
+  const [metodoPagamento, setMetodoPagamento] = useState<"pix" | "cartao">("pix");
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,8 +61,21 @@ function CheckoutPage() {
           ? { entrega, comprador, endereco: { cep, rua, numero, complemento, bairro, cidade, uf } }
           : { entrega, comprador };
 
-      const { initPoint } = await createCheckoutPreference({ data: payload });
-      window.location.href = initPoint;
+      if (entrega === "correio" && metodoPagamento === "cartao") {
+        // Cartão de crédito continua pelo checkout hospedado do Mercado Pago.
+        const { initPoint } = await createCheckoutPreference({ data: payload });
+        window.location.href = initPoint;
+        return;
+      }
+
+      // Pix: geramos o pagamento aqui mesmo e levamos o cliente para a tela
+      // de pagamento própria, com o QR code / copia-e-cola.
+      const result = await createPixPayment({ data: payload });
+      sessionStorage.setItem(`pix-qr-${result.paymentId}`, result.qrCode);
+      if (result.qrCodeBase64) {
+        sessionStorage.setItem(`pix-qr-img-${result.paymentId}`, result.qrCodeBase64);
+      }
+      navigate({ to: "/pagamento", search: { paymentId: result.paymentId, entrega } });
     } catch (err) {
       console.error(err);
       setError(
@@ -150,14 +167,40 @@ function CheckoutPage() {
             </div>
           )}
 
+          {entrega === "correio" && (
+            <div className="space-y-3 border-t border-gold/25 pt-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-gold">Forma de pagamento</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setMetodoPagamento("pix")}
+                  className={`flex items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${metodoPagamento === "pix" ? "border-gold bg-gold/10 text-navy" : "border-gold/25 text-charcoal/70"}`}
+                >
+                  <QrCode className="size-4 text-gold" /> Pix
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMetodoPagamento("cartao")}
+                  className={`flex items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${metodoPagamento === "cartao" ? "border-gold bg-gold/10 text-navy" : "border-gold/25 text-charcoal/70"}`}
+                >
+                  <CreditCard className="size-4 text-gold" /> Cartão de crédito
+                </button>
+              </div>
+            </div>
+          )}
+
           {error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
 
           <Button type="submit" variant="gold" size="lg" disabled={submitting} className="h-13 w-full text-xs font-bold uppercase tracking-[0.12em]">
             {submitting ? <Loader2 className="size-4 animate-spin" /> : <Anchor className="size-4" />}
-            {submitting ? "Redirecionando para o pagamento…" : `Ir para o pagamento · ${price}`}
+            {submitting ? "Processando…" : `Ir para o pagamento · ${price}`}
           </Button>
           <p className="text-center text-xs text-charcoal/60">
-            {entrega === "presencial" ? "Pagamento via PIX." : "Pagamento via PIX ou cartão de crédito."} Você será redirecionado para o ambiente seguro do Mercado Pago.
+            {entrega === "presencial"
+              ? "Pagamento via Pix, gerado nesta página."
+              : metodoPagamento === "pix"
+                ? "Pagamento via Pix, gerado nesta página."
+                : "Você será redirecionado para o ambiente seguro do Mercado Pago."}
           </p>
         </form>
       </div>
