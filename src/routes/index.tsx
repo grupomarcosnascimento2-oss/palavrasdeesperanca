@@ -71,7 +71,6 @@ function Index() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [cpf, setCpf] = useState("");
   const [cep, setCep] = useState("");
   const [rua, setRua] = useState("");
   const [numero, setNumero] = useState("");
@@ -88,7 +87,7 @@ function Index() {
     setCheckoutError(null);
     setSubmitting(true);
     try {
-      const comprador = { nome, email, telefone, cpf };
+      const comprador = { nome, email, telefone };
       const payload =
         delivery === "correio"
           ? { entrega: delivery, comprador, endereco: { cep, rua, numero, complemento, bairro, cidade, uf } }
@@ -202,10 +201,6 @@ function Index() {
                 <Label htmlFor="telefone" className="text-ivory/85">WhatsApp / telefone</Label>
                 <Input id="telefone" required inputMode="numeric" minLength={10} maxLength={11} placeholder="61999999999 (só números, com DDD)" value={telefone} onChange={(e) => setTelefone(e.target.value.replace(/\D/g, "").slice(0, 11))} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
               </div>
-            </div>
-            <div>
-              <Label htmlFor="cpf" className="text-ivory/85">CPF</Label>
-              <Input id="cpf" required inputMode="numeric" minLength={11} maxLength={11} placeholder="00000000000 (só números)" value={cpf} onChange={(e) => setCpf(e.target.value.replace(/\D/g, "").slice(0, 11))} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
             </div>
           </div>
 

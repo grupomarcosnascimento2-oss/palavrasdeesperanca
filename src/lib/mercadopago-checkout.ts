@@ -17,10 +17,6 @@ const buyerSchema = z.object({
     .string()
     .transform((v) => v.replace(/\D/g, ""))
     .refine((v) => v.length === 10 || v.length === 11, "Informe um telefone válido, com DDD"),
-  cpf: z
-    .string()
-    .transform((v) => v.replace(/\D/g, ""))
-    .refine((v) => v.length === 11, "CPF inválido"),
 });
 
 const enderecoSchema = z.object({
@@ -95,7 +91,6 @@ export const createCheckoutPreference = createServerFn({ method: "POST" })
           ...(sobrenome ? { surname: sobrenome } : {}),
           email: data.comprador.email,
           phone: { area_code: data.comprador.telefone.slice(0, 2), number: data.comprador.telefone.slice(2) },
-          identification: { type: "CPF", number: data.comprador.cpf },
           ...(data.entrega === "correio"
             ? {
                 address: {
@@ -174,7 +169,6 @@ export const createPixPayment = createServerFn({ method: "POST" })
           email: data.comprador.email,
           first_name: nomeFirst ?? data.comprador.nome,
           ...(sobrenome ? { last_name: sobrenome } : {}),
-          identification: { type: "CPF", number: data.comprador.cpf },
         },
         metadata: {
           entrega: data.entrega,
