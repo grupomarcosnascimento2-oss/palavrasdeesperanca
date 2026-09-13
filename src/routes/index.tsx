@@ -115,7 +115,7 @@ function Index() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-6 border-t border-gold/40 pt-14 text-center"><PreorderButton label={`Garantir meu exemplar · ${price}`} href={`${PREORDER_URL}?entrega=${delivery}`}/></div>
+      <div className="flex flex-col items-center gap-6 border-t border-gold/40 pt-14 text-center"><PreorderButton label={`Garantir meu exemplar · ${price}`} href={`/checkout?entrega=${delivery}`}/></div>
     </div></section>
 
     {/* TODO: revisar as formas de pagamento com informação real antes de publicar. */}
