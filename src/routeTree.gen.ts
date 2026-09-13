@@ -10,18 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as PagamentoRouteImport } from './routes/pagamento'
 import { Route as PedidoConfirmadoRouteImport } from './routes/pedido-confirmado'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PagamentoRoute = PagamentoRouteImport.update({
@@ -37,34 +31,30 @@ const PedidoConfirmadoRoute = PedidoConfirmadoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/checkout': typeof CheckoutRoute
   '/pagamento': typeof PagamentoRoute
   '/pedido-confirmado': typeof PedidoConfirmadoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/checkout': typeof CheckoutRoute
   '/pagamento': typeof PagamentoRoute
   '/pedido-confirmado': typeof PedidoConfirmadoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/checkout': typeof CheckoutRoute
   '/pagamento': typeof PagamentoRoute
   '/pedido-confirmado': typeof PedidoConfirmadoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/checkout' | '/pagamento' | '/pedido-confirmado'
+  fullPaths: '/' | '/pagamento' | '/pedido-confirmado'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/checkout' | '/pagamento' | '/pedido-confirmado'
-  id: '__root__' | '/' | '/checkout' | '/pagamento' | '/pedido-confirmado'
+  to: '/' | '/pagamento' | '/pedido-confirmado'
+  id: '__root__' | '/' | '/pagamento' | '/pedido-confirmado'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CheckoutRoute: typeof CheckoutRoute
   PagamentoRoute: typeof PagamentoRoute
   PedidoConfirmadoRoute: typeof PedidoConfirmadoRoute
 }
@@ -76,13 +66,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pagamento': {
@@ -104,7 +87,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CheckoutRoute: CheckoutRoute,
   PagamentoRoute: PagamentoRoute,
   PedidoConfirmadoRoute: PedidoConfirmadoRoute,
 }

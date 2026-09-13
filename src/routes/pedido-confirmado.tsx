@@ -51,9 +51,9 @@ function ConfirmationPage() {
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           {resolvedStatus === "rejected" ? (
             <Button asChild variant="gold" size="lg" className="h-13 w-full text-xs uppercase tracking-[0.12em] sm:w-auto">
-              <Link to="/checkout">
+              <a href="/#pre-lancamento">
                 <Anchor className="size-4" /> Tentar novamente
-              </Link>
+              </a>
             </Button>
           ) : (
             <Button asChild variant="gold" size="lg" className="h-13 w-full text-xs uppercase tracking-[0.12em] sm:w-auto">

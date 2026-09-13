@@ -1,12 +1,21 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Anchor, ArrowDown, Gift, Heart } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Anchor, ArrowDown, CreditCard, Gift, Heart, Loader2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createCheckoutPreference, createPixPayment } from "@/lib/mercadopago-checkout";
 import bookCover from "@/assets/book-cover.png";
 import horizon from "@/assets/anchor-horizon.jpg";
 import contemplativeSea from "@/assets/contemplative-sea.jpg";
 import bibleLantern from "@/assets/bible-lantern.jpg";
 import padreWesley from "@/assets/padre-wesley.jpg";
+
+const UFS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA",
+  "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,8 +50,57 @@ function PreorderButton({ label = "Quero garantir meu exemplar", outline = false
 }
 
 function Index() {
+  const navigate = useNavigate();
   const [delivery, setDelivery] = useState<"presencial" | "correio">("presencial");
   const price = delivery === "correio" ? "R$ 49,90" : "R$ 29,90";
+
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [cep, setCep] = useState("");
+  const [rua, setRua] = useState("");
+  const [numero, setNumero] = useState("");
+  const [complemento, setComplemento] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
+  const [metodoPagamento, setMetodoPagamento] = useState<"pix" | "cartao">("pix");
+  const [submitting, setSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  async function handleCheckoutSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setCheckoutError(null);
+    setSubmitting(true);
+    try {
+      const comprador = { nome, email, telefone, cpf };
+      const payload =
+        delivery === "correio"
+          ? { entrega: delivery, comprador, endereco: { cep, rua, numero, complemento, bairro, cidade, uf } }
+          : { entrega: delivery, comprador };
+
+      if (delivery === "correio" && metodoPagamento === "cartao") {
+        const { initPoint } = await createCheckoutPreference({ data: payload });
+        window.location.href = initPoint;
+        return;
+      }
+
+      const result = await createPixPayment({ data: payload });
+      sessionStorage.setItem(`pix-qr-${result.paymentId}`, result.qrCode);
+      if (result.qrCodeBase64) {
+        sessionStorage.setItem(`pix-qr-img-${result.paymentId}`, result.qrCodeBase64);
+      }
+      navigate({ to: "/pagamento", search: { paymentId: result.paymentId, entrega: delivery } });
+    } catch (err) {
+      console.error(err);
+      setCheckoutError(
+        err instanceof Error ? err.message : "Não foi possível iniciar o pagamento. Tente novamente em instantes.",
+      );
+      setSubmitting(false);
+    }
+  }
+
   const journey = [
     ["01", "Dor", "Acolher a dor da despedida sem culpa."],
     ["02", "Memória", "Guardar aquilo que o amor deixou."],
@@ -115,7 +173,104 @@ function Index() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-6 border-t border-gold/40 pt-14 text-center"><PreorderButton label={`Garantir meu exemplar · ${price}`} href={`/checkout?entrega=${delivery}`}/></div>
+      <div className="mx-auto max-w-xl border-t border-gold/40 pt-14">
+        <p className="mb-6 text-center text-sm font-semibold uppercase tracking-[0.14em] text-gold">Seus dados para garantir o exemplar</p>
+        <form onSubmit={handleCheckoutSubmit} className="space-y-6 rounded-2xl border border-gold/30 bg-navy-soft p-6 text-left shadow-lg sm:p-8">
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="nome" className="text-ivory/85">Nome completo</Label>
+              <Input id="nome" required value={nome} onChange={(e) => setNome(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="email" className="text-ivory/85">E-mail</Label>
+                <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+              </div>
+              <div>
+                <Label htmlFor="telefone" className="text-ivory/85">WhatsApp / telefone</Label>
+                <Input id="telefone" required placeholder="61999999999" value={telefone} onChange={(e) => setTelefone(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="cpf" className="text-ivory/85">CPF</Label>
+              <Input id="cpf" required placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+            </div>
+          </div>
+
+          {delivery === "correio" && (
+            <div className="space-y-4 border-t border-gold/25 pt-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold">Endereço de entrega</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="cep" className="text-ivory/85">CEP</Label>
+                  <Input id="cep" required placeholder="00000-000" value={cep} onChange={(e) => setCep(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+                </div>
+                <div>
+                  <Label htmlFor="numero" className="text-ivory/85">Número</Label>
+                  <Input id="numero" required value={numero} onChange={(e) => setNumero(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="rua" className="text-ivory/85">Rua</Label>
+                <Input id="rua" required value={rua} onChange={(e) => setRua(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+              </div>
+              <div>
+                <Label htmlFor="complemento" className="text-ivory/85">Complemento (opcional)</Label>
+                <Input id="complemento" value={complemento} onChange={(e) => setComplemento(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-[1fr_1fr_auto]">
+                <div>
+                  <Label htmlFor="bairro" className="text-ivory/85">Bairro</Label>
+                  <Input id="bairro" required value={bairro} onChange={(e) => setBairro(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+                </div>
+                <div>
+                  <Label htmlFor="cidade" className="text-ivory/85">Cidade</Label>
+                  <Input id="cidade" required value={cidade} onChange={(e) => setCidade(e.target.value)} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+                </div>
+                <div>
+                  <Label htmlFor="uf" className="text-ivory/85">UF</Label>
+                  <Select required value={uf} onValueChange={setUf}>
+                    <SelectTrigger id="uf" className="mt-1.5 w-20 border-gold/30 bg-navy text-ivory">
+                      <SelectValue placeholder="UF" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {UFS.map((sigla) => (
+                        <SelectItem key={sigla} value={sigla}>{sigla}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {delivery === "correio" && (
+            <div className="space-y-3 border-t border-gold/25 pt-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold">Forma de pagamento</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button type="button" onClick={() => setMetodoPagamento("pix")} className={`flex items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${metodoPagamento === "pix" ? "border-gold bg-gold/10 text-ivory" : "border-gold/25 text-ivory/70"}`}>
+                  <QrCode className="size-4 text-gold" /> Pix
+                </button>
+                <button type="button" onClick={() => setMetodoPagamento("cartao")} className={`flex items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${metodoPagamento === "cartao" ? "border-gold bg-gold/10 text-ivory" : "border-gold/25 text-ivory/70"}`}>
+                  <CreditCard className="size-4 text-gold" /> Cartão de crédito
+                </button>
+              </div>
+            </div>
+          )}
+
+          {checkoutError && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{checkoutError}</p>}
+
+          <Button type="submit" variant="gold" size="lg" disabled={submitting} className="h-13 w-full text-xs font-bold uppercase tracking-[0.12em]">
+            {submitting ? <Loader2 className="size-4 animate-spin" /> : <Anchor className="size-4" />}
+            {submitting ? "Processando…" : `Garantir meu exemplar · ${price}`}
+          </Button>
+          <p className="text-center text-xs text-ivory/60">
+            {delivery === "presencial" || metodoPagamento === "pix"
+              ? "Pagamento via Pix, gerado na hora."
+              : "Você será redirecionado para o ambiente seguro do Mercado Pago."}
+          </p>
+        </form>
+      </div>
     </div></section>
 
     {/* TODO: revisar as formas de pagamento com informação real antes de publicar. */}
