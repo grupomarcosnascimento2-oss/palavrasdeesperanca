@@ -3,6 +3,7 @@ import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { sendOrderApprovedEmail } from "@/lib/notify";
 
 type PaymentResult = Awaited<ReturnType<InstanceType<typeof Payment>["get"]>>;
 
@@ -65,28 +66,54 @@ async function upsertPedidoFromPayment(pay: PaymentResult) {
     if (!pay.id) return;
     const meta = (pay.metadata ?? {}) as Record<string, string | undefined>;
     const supabase = getSupabaseServerClient();
+    const newStatus = pay.status ?? "pending";
 
-    await supabase.from("pedidos").upsert(
-      {
-        payment_id: String(pay.id),
-        payment_type: pay.payment_method_id === "pix" ? "pix" : "cartao",
-        status: pay.status ?? "pending",
-        entrega: meta["entrega"] ?? "presencial",
-        valor: Number(pay.transaction_amount ?? 0),
-        nome: meta["nome"] ?? pay.payer?.first_name ?? "",
-        email: meta["email"] ?? pay.payer?.email ?? "",
-        telefone: meta["telefone"] ?? null,
-        cep: meta["cep"] ?? null,
-        rua: meta["rua"] ?? null,
-        numero: meta["numero"] ?? null,
-        complemento: meta["complemento"] ?? null,
-        bairro: meta["bairro"] ?? null,
-        cidade: meta["cidade"] ?? null,
-        uf: meta["uf"] ?? null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "payment_id" },
-    );
+    const { data: existing } = await supabase
+      .from("pedidos")
+      .select("status")
+      .eq("payment_id", String(pay.id))
+      .maybeSingle();
+
+    const pedidoRecord = {
+      payment_id: String(pay.id),
+      payment_type: pay.payment_method_id === "pix" ? "pix" : "cartao",
+      status: newStatus,
+      entrega: meta["entrega"] ?? "presencial",
+      valor: Number(pay.transaction_amount ?? 0),
+      nome: meta["nome"] ?? pay.payer?.first_name ?? "",
+      email: meta["email"] ?? pay.payer?.email ?? "",
+      telefone: meta["telefone"] ?? null,
+      cep: meta["cep"] ?? null,
+      rua: meta["rua"] ?? null,
+      numero: meta["numero"] ?? null,
+      complemento: meta["complemento"] ?? null,
+      bairro: meta["bairro"] ?? null,
+      cidade: meta["cidade"] ?? null,
+      uf: meta["uf"] ?? null,
+      updated_at: new Date().toISOString(),
+    };
+
+    await supabase.from("pedidos").upsert(pedidoRecord, { onConflict: "payment_id" });
+
+    // Só avisa quando o status VIRA aprovado agora (evita reenviar o e-mail
+    // a cada consulta de status feita pelo polling da tela de pagamento).
+    if (newStatus === "approved" && existing?.status !== "approved") {
+      await sendOrderApprovedEmail({
+        nome: pedidoRecord.nome,
+        email: pedidoRecord.email,
+        telefone: pedidoRecord.telefone,
+        entrega: pedidoRecord.entrega,
+        paymentType: pedidoRecord.payment_type,
+        valor: pedidoRecord.valor,
+        cep: pedidoRecord.cep,
+        rua: pedidoRecord.rua,
+        numero: pedidoRecord.numero,
+        complemento: pedidoRecord.complemento,
+        bairro: pedidoRecord.bairro,
+        cidade: pedidoRecord.cidade,
+        uf: pedidoRecord.uf,
+      });
+    }
   } catch (err) {
     console.error("Falha ao gravar pedido no Supabase:", err);
   }
