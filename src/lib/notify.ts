@@ -23,6 +23,8 @@ export async function sendOrderApprovedEmail(pedido: {
       console.error("RESEND_API_KEY / NOTIFY_EMAIL não configurados — aviso de pedido não enviado.");
       return;
     }
+    // Aceita múltiplos e-mails separados por vírgula no mesmo secret.
+    const notifyEmails = notifyEmail.split(",").map((e) => e.trim()).filter(Boolean);
 
     const entregaLabel = pedido.entrega === "correio" ? "Pelo Correio" : "Retirada no lançamento";
     const enderecoHtml =
@@ -77,7 +79,7 @@ export async function sendOrderApprovedEmail(pedido: {
       },
       body: JSON.stringify({
         from: "Coleção Âncora <onboarding@resend.dev>",
-        to: [notifyEmail],
+        to: notifyEmails,
         subject: `💰 Novo pedido — ${pedido.nome} (R$ ${pedido.valor.toFixed(2).replace(".", ",")})`,
         html,
       }),
