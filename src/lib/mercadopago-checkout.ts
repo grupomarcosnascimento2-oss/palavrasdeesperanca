@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
+
+type PaymentResult = Awaited<ReturnType<InstanceType<typeof Payment>["get"]>>;
 
 // Preços do pré-lançamento. Mantidos aqui (servidor) como fonte da verdade,
 // para que o valor cobrado nunca dependa do que o cliente enviou pelo formulário.
@@ -51,6 +54,42 @@ function getBaseUrl() {
   // (ex: https://palavrasdeesperanca.lovable.app). Sem isso os retornos do
   // Mercado Pago (back_urls) não vão funcionar corretamente em produção.
   return process.env["SITE_URL"] ?? "https://palavrasdeesperanca.lovable.app";
+}
+
+// Grava (ou atualiza) o registro do pedido na tabela `pedidos` do Supabase, a
+// partir dos dados de um pagamento do Mercado Pago (usa o `metadata` que
+// anexamos na criação do pagamento/preferência). Falhas aqui nunca devem
+// derrubar o fluxo de pagamento em si — só registramos o erro no log.
+async function upsertPedidoFromPayment(pay: PaymentResult) {
+  try {
+    if (!pay.id) return;
+    const meta = (pay.metadata ?? {}) as Record<string, string | undefined>;
+    const supabase = getSupabaseServerClient();
+
+    await supabase.from("pedidos").upsert(
+      {
+        payment_id: String(pay.id),
+        payment_type: pay.payment_method_id === "pix" ? "pix" : "cartao",
+        status: pay.status ?? "pending",
+        entrega: meta["entrega"] ?? "presencial",
+        valor: Number(pay.transaction_amount ?? 0),
+        nome: meta["nome"] ?? pay.payer?.first_name ?? "",
+        email: meta["email"] ?? pay.payer?.email ?? "",
+        telefone: meta["telefone"] ?? null,
+        cep: meta["cep"] ?? null,
+        rua: meta["rua"] ?? null,
+        numero: meta["numero"] ?? null,
+        complemento: meta["complemento"] ?? null,
+        bairro: meta["bairro"] ?? null,
+        cidade: meta["cidade"] ?? null,
+        uf: meta["uf"] ?? null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "payment_id" },
+    );
+  } catch (err) {
+    console.error("Falha ao gravar pedido no Supabase:", err);
+  }
 }
 
 export const createCheckoutPreference = createServerFn({ method: "POST" })
@@ -106,6 +145,8 @@ export const createCheckoutPreference = createServerFn({ method: "POST" })
           installments: 3,
         },
         metadata: {
+          nome: data.comprador.nome,
+          email: data.comprador.email,
           entrega: data.entrega,
           telefone: data.comprador.telefone,
           ...(data.entrega === "correio"
@@ -171,6 +212,8 @@ export const createPixPayment = createServerFn({ method: "POST" })
           ...(sobrenome ? { last_name: sobrenome } : {}),
         },
         metadata: {
+          nome: data.comprador.nome,
+          email: data.comprador.email,
           entrega: data.entrega,
           telefone: data.comprador.telefone,
           ...(data.entrega === "correio"
@@ -196,6 +239,8 @@ export const createPixPayment = createServerFn({ method: "POST" })
       throw new Error("Mercado Pago não retornou o código Pix (qr_code).");
     }
 
+    await upsertPedidoFromPayment(result);
+
     return {
       paymentId: String(result.id),
       status: result.status ?? "pending",
@@ -207,7 +252,8 @@ export const createPixPayment = createServerFn({ method: "POST" })
 const paymentIdSchema = z.object({ paymentId: z.string().min(1) });
 
 // Consulta o status atual de um pagamento (usado para o polling da tela de
-// pagamento saber quando o Pix foi confirmado).
+// pagamento saber quando o Pix foi confirmado) e mantém o registro do pedido
+// no Supabase sincronizado.
 export const getPaymentStatus = createServerFn({ method: "POST" })
   .validator((input: unknown) => paymentIdSchema.parse(input))
   .handler(async ({ data }) => {
@@ -221,6 +267,27 @@ export const getPaymentStatus = createServerFn({ method: "POST" })
     const client = new MercadoPagoConfig({ accessToken });
     const payment = new Payment(client);
     const result = await payment.get({ id: data.paymentId });
+
+    await upsertPedidoFromPayment(result);
+
+    return { status: result.status ?? "pending" };
+  });
+
+// Chamado pela página de confirmação (/pedido-confirmado) quando o Mercado
+// Pago retorna com um payment_id na URL — cobre principalmente o fluxo de
+// cartão de crédito (Checkout Pro), cujo pagamento só existe depois que o
+// cliente conclui o checkout hospedado.
+export const confirmPedidoFromRedirect = createServerFn({ method: "POST" })
+  .validator((input: unknown) => paymentIdSchema.parse(input))
+  .handler(async ({ data }) => {
+    const accessToken = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+    if (!accessToken) return { status: "pending" };
+
+    const client = new MercadoPagoConfig({ accessToken });
+    const payment = new Payment(client);
+    const result = await payment.get({ id: data.paymentId });
+
+    await upsertPedidoFromPayment(result);
 
     return { status: result.status ?? "pending" };
   });

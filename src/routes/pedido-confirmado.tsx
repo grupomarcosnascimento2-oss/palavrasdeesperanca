@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { Anchor, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { confirmPedidoFromRedirect } from "@/lib/mercadopago-checkout";
 
 // O Mercado Pago acrescenta esses parâmetros na URL de retorno (back_urls).
 const searchSchema = z.object({
@@ -19,8 +21,17 @@ export const Route = createFileRoute("/pedido-confirmado")({
 });
 
 function ConfirmationPage() {
-  const { status, collection_status } = Route.useSearch();
-  const resolvedStatus = status ?? collection_status ?? "pending";
+  const { status, collection_status, payment_id } = Route.useSearch();
+  const [liveStatus, setLiveStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!payment_id) return;
+    confirmPedidoFromRedirect({ data: { paymentId: payment_id } })
+      .then((r) => setLiveStatus(r.status))
+      .catch((err) => console.error(err));
+  }, [payment_id]);
+
+  const resolvedStatus = liveStatus ?? status ?? collection_status ?? "pending";
 
   const content = {
     approved: {
