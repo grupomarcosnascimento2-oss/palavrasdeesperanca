@@ -1,6 +1,3 @@
-// Envia um e-mail de aviso via Resend (https://resend.com) sempre que um
-// pagamento é aprovado. Falhas aqui nunca devem derrubar o fluxo de
-// pagamento — só registramos o erro no log.
 export async function sendOrderApprovedEmail(pedido: {
   nome: string;
   email: string;
@@ -86,5 +83,100 @@ export async function sendOrderApprovedEmail(pedido: {
     });
   } catch (err) {
     console.error("Falha ao enviar e-mail de aviso de pedido:", err);
+  }
+}
+
+// Envia um aviso por WhatsApp via Meta WhatsApp Cloud API, sempre que um
+// pagamento for aprovado. Preparado para ser ativado depois — enquanto os
+// secrets abaixo não forem configurados, a função simplesmente não faz nada
+// (não quebra o fluxo de pagamento).
+//
+// Configuração necessária (Cloud > Secrets no Lovable), quando formos ativar:
+// - WHATSAPP_ACCESS_TOKEN     → token de acesso do app Meta (permanente, gerado
+//                                em Meta for Developers > seu app > WhatsApp > API Setup)
+// - WHATSAPP_PHONE_NUMBER_ID  → o "Phone number ID" do número comercial
+//                                (mesmo painel, aparece junto do número de teste/produção)
+// - WHATSAPP_NOTIFY_NUMBERS   → um ou mais números que devem RECEBER o aviso,
+//                                separados por vírgula, em formato internacional
+//                                sem "+" nem espaços (ex: 5561999119324)
+// - WHATSAPP_TEMPLATE_NAME    → (opcional) nome de um template aprovado no Meta,
+//                                se quiser enviar fora da janela de 24h. Sem isso,
+//                                envia como mensagem de texto simples (só funciona
+//                                se o número de destino tiver iniciado conversa com
+//                                o número comercial nas últimas 24h).
+export async function sendOrderApprovedWhatsApp(pedido: {
+  nome: string;
+  telefone: string | null;
+  entrega: string;
+  paymentType: string;
+  valor: number;
+}) {
+  try {
+    const accessToken = process.env["WHATSAPP_ACCESS_TOKEN"];
+    const phoneNumberId = process.env["WHATSAPP_PHONE_NUMBER_ID"];
+    const notifyNumbers = process.env["WHATSAPP_NOTIFY_NUMBERS"];
+    const templateName = process.env["WHATSAPP_TEMPLATE_NAME"];
+
+    if (!accessToken || !phoneNumberId || !notifyNumbers) {
+      // Ainda não configurado — sai em silêncio (sem log de erro), já que
+      // esse canal é opcional até ser ativado de propósito.
+      return;
+    }
+
+    const destinatarios = notifyNumbers.split(",").map((n) => n.trim()).filter(Boolean);
+    const entregaLabel = pedido.entrega === "correio" ? "pelo Correio" : "retirada no lançamento";
+    const pagamentoLabel = pedido.paymentType === "pix" ? "Pix" : "cartão de crédito";
+    const valorLabel = `R$ ${pedido.valor.toFixed(2).replace(".", ",")}`;
+
+    const texto =
+      `📖 *Novo pedido — Quando a Saudade Permanece*\n\n` +
+      `*Nome:* ${pedido.nome}\n` +
+      `*Telefone:* ${pedido.telefone ?? "-"}\n` +
+      `*Entrega:* ${entregaLabel}\n` +
+      `*Pagamento:* ${pagamentoLabel}\n` +
+      `*Valor:* ${valorLabel}`;
+
+    await Promise.all(
+      destinatarios.map((to) =>
+        fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(
+            templateName
+              ? {
+                  messaging_product: "whatsapp",
+                  to,
+                  type: "template",
+                  template: {
+                    name: templateName,
+                    language: { code: "pt_BR" },
+                    components: [
+                      {
+                        type: "body",
+                        parameters: [
+                          { type: "text", text: pedido.nome },
+                          { type: "text", text: entregaLabel },
+                          { type: "text", text: pagamentoLabel },
+                          { type: "text", text: valorLabel },
+                        ],
+                      },
+                    ],
+                  },
+                }
+              : {
+                  messaging_product: "whatsapp",
+                  to,
+                  type: "text",
+                  text: { body: texto },
+                },
+          ),
+        }),
+      ),
+    );
+  } catch (err) {
+    console.error("Falha ao enviar aviso de pedido via WhatsApp:", err);
   }
 }

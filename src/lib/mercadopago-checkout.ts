@@ -3,7 +3,7 @@ import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
-import { sendOrderApprovedEmail } from "@/lib/notify";
+import { sendOrderApprovedEmail, sendOrderApprovedWhatsApp } from "@/lib/notify";
 
 type PaymentResult = Awaited<ReturnType<InstanceType<typeof Payment>["get"]>>;
 
@@ -95,24 +95,33 @@ async function upsertPedidoFromPayment(pay: PaymentResult) {
 
     await supabase.from("pedidos").upsert(pedidoRecord, { onConflict: "payment_id" });
 
-    // Só avisa quando o status VIRA aprovado agora (evita reenviar o e-mail
+    // Só avisa quando o status VIRA aprovado agora (evita reenviar o aviso
     // a cada consulta de status feita pelo polling da tela de pagamento).
     if (newStatus === "approved" && existing?.status !== "approved") {
-      await sendOrderApprovedEmail({
-        nome: pedidoRecord.nome,
-        email: pedidoRecord.email,
-        telefone: pedidoRecord.telefone,
-        entrega: pedidoRecord.entrega,
-        paymentType: pedidoRecord.payment_type,
-        valor: pedidoRecord.valor,
-        cep: pedidoRecord.cep,
-        rua: pedidoRecord.rua,
-        numero: pedidoRecord.numero,
-        complemento: pedidoRecord.complemento,
-        bairro: pedidoRecord.bairro,
-        cidade: pedidoRecord.cidade,
-        uf: pedidoRecord.uf,
-      });
+      await Promise.all([
+        sendOrderApprovedEmail({
+          nome: pedidoRecord.nome,
+          email: pedidoRecord.email,
+          telefone: pedidoRecord.telefone,
+          entrega: pedidoRecord.entrega,
+          paymentType: pedidoRecord.payment_type,
+          valor: pedidoRecord.valor,
+          cep: pedidoRecord.cep,
+          rua: pedidoRecord.rua,
+          numero: pedidoRecord.numero,
+          complemento: pedidoRecord.complemento,
+          bairro: pedidoRecord.bairro,
+          cidade: pedidoRecord.cidade,
+          uf: pedidoRecord.uf,
+        }),
+        sendOrderApprovedWhatsApp({
+          nome: pedidoRecord.nome,
+          telefone: pedidoRecord.telefone,
+          entrega: pedidoRecord.entrega,
+          paymentType: pedidoRecord.payment_type,
+          valor: pedidoRecord.valor,
+        }),
+      ]);
     }
   } catch (err) {
     console.error("Falha ao gravar pedido no Supabase:", err);
