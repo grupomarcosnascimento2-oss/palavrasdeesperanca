@@ -37,7 +37,7 @@ function ConfirmationPage() {
     approved: {
       icon: <CheckCircle2 className="size-14 text-gold" strokeWidth={1.3} />,
       title: "Pagamento confirmado!",
-      body: "Seu exemplar de Quando a Saudade Permanece está garantido. Enviamos os detalhes para o seu e-mail e vamos te avisar sobre os próximos passos perto do lançamento oficial, em 15 de dezembro de 2026, no Santuário Nossa Senhora das Graças, em Anápolis (GO).",
+      body: "Seu exemplar de Quando a Saudade Permanece está garantido. Enviamos os detalhes para o seu e-mail e vamos te avisar sobre os próximos passos perto do lançamento oficial, em 15 de dezembro de 2026, no Santuário Nossa Senhora das Graças (Rua 09, Quadra 38, Lote 6, JK Nova Capital), em Anápolis (GO).",
     },
     pending: {
       icon: <Clock className="size-14 text-gold" strokeWidth={1.3} />,
