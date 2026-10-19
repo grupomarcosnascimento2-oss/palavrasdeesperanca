@@ -27,7 +27,7 @@ const enderecoSchema = z.object({
   cep: z
     .string()
     .transform((v) => v.replace(/\D/g, ""))
-    .refine((v) => v.length === 8, "CEP inválido"),
+    .refine((v) => v.length === 8, "CEP inválido: informe os 8 números do CEP (ex.: 75690000)"),
   rua: z.string().min(2, "Informe a rua"),
   numero: z.string().min(1, "Informe o número"),
   complemento: z.string().optional(),

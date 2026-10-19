@@ -90,7 +90,7 @@ function Index() {
       const comprador = { nome, email, telefone };
       const payload =
         delivery === "correio"
-          ? { entrega: delivery, comprador, endereco: { cep, rua, numero, complemento, bairro, cidade, uf } }
+          ? { entrega: delivery, comprador, endereco: { cep: String(new FormData(e.currentTarget as HTMLFormElement).get("cep") ?? cep).replace(/\D/g, ""), rua, numero, complemento, bairro, cidade, uf } }
           : { entrega: delivery, comprador };
 
       if (delivery === "correio" && metodoPagamento === "cartao") {
@@ -211,7 +211,7 @@ function Index() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="cep" className="text-ivory/85">CEP</Label>
-                  <Input id="cep" required inputMode="numeric" minLength={8} maxLength={8} placeholder="00000000 (só números)" value={cep} onChange={(e) => setCep(e.target.value.replace(/\D/g, "").slice(0, 8))} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
+                  <Input id="cep" name="cep" required inputMode="numeric" minLength={8} maxLength={8} placeholder="00000000 (só números)" value={cep} onChange={(e) => setCep(e.target.value.replace(/\D/g, "").slice(0, 8))} className="mt-1.5 border-gold/30 bg-navy text-ivory" />
                 </div>
                 <div>
                   <Label htmlFor="numero" className="text-ivory/85">Número</Label>
