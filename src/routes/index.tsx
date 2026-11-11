@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Anchor, ArrowDown, CreditCard, Gift, Heart, Loader2, QrCode } from "lucide-react";
+import { Anchor, ArrowDown, Gift, Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createCheckoutPreference, createPixPayment } from "@/lib/mercadopago-checkout";
+import { createPedido } from "@/lib/pedidos";
 import bookCover from "@/assets/book-cover.png";
 import horizon from "@/assets/anchor-horizon.jpg";
 import contemplativeSea from "@/assets/contemplative-sea.jpg";
@@ -78,7 +78,6 @@ function Index() {
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [uf, setUf] = useState("");
-  const [metodoPagamento, setMetodoPagamento] = useState<"pix" | "cartao">("pix");
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -93,18 +92,8 @@ function Index() {
           ? { entrega: delivery, comprador, endereco: { cep: String(new FormData(e.currentTarget as HTMLFormElement).get("cep") ?? cep).replace(/\D/g, ""), rua, numero, complemento, bairro, cidade, uf } }
           : { entrega: delivery, comprador };
 
-      if (delivery === "correio" && metodoPagamento === "cartao") {
-        const { initPoint } = await createCheckoutPreference({ data: payload });
-        window.location.href = initPoint;
-        return;
-      }
-
-      const result = await createPixPayment({ data: payload });
-      sessionStorage.setItem(`pix-qr-${result.paymentId}`, result.qrCode);
-      if (result.qrCodeBase64) {
-        sessionStorage.setItem(`pix-qr-img-${result.paymentId}`, result.qrCodeBase64);
-      }
-      navigate({ to: "/pagamento", search: { paymentId: result.paymentId, entrega: delivery } });
+      await createPedido({ data: payload });
+      navigate({ to: "/pagamento", search: { entrega: delivery } });
     } catch (err) {
       console.error(err);
       setCheckoutError(parseCheckoutError(err));
@@ -252,20 +241,6 @@ function Index() {
             </div>
           )}
 
-          {delivery === "correio" && (
-            <div className="space-y-3 border-t border-gold/25 pt-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold">Forma de pagamento</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <button type="button" onClick={() => setMetodoPagamento("pix")} className={`flex items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${metodoPagamento === "pix" ? "border-gold bg-gold/10 text-ivory" : "border-gold/25 text-ivory/70"}`}>
-                  <QrCode className="size-4 text-gold" /> Pix
-                </button>
-                <button type="button" onClick={() => setMetodoPagamento("cartao")} className={`flex items-center gap-2 rounded-lg border p-3 text-sm transition-colors ${metodoPagamento === "cartao" ? "border-gold bg-gold/10 text-ivory" : "border-gold/25 text-ivory/70"}`}>
-                  <CreditCard className="size-4 text-gold" /> Cartão de crédito
-                </button>
-              </div>
-            </div>
-          )}
-
           {checkoutError && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{checkoutError}</p>}
 
           <Button type="submit" variant="gold" size="lg" disabled={submitting} className="h-13 w-full text-xs font-bold uppercase tracking-[0.12em]">
@@ -273,19 +248,16 @@ function Index() {
             {submitting ? "Processando…" : `Garantir meu exemplar · ${price}`}
           </Button>
           <p className="text-center text-xs text-ivory/60">
-            {delivery === "presencial" || metodoPagamento === "pix"
-              ? "Pagamento via Pix, gerado na hora."
-              : "Você será redirecionado para o ambiente seguro do Mercado Pago."}
+            Pagamento via Pix: o QR Code e a chave aparecem na próxima etapa.
           </p>
         </form>
       </div>
     </div></section>
 
-    {/* TODO: revisar as formas de pagamento com informação real antes de publicar. */}
     <section className="bg-ivory py-24 sm:py-32"><div className="section-shell mx-auto max-w-2xl"><div className="text-center"><Eyebrow>Perguntas frequentes</Eyebrow><h2 className="text-4xl text-navy sm:text-5xl">Ainda com alguma dúvida?</h2></div><div className="mt-14 grid gap-4">
       <details className="group rounded-xl border border-gold/25 bg-gradient-to-b from-background to-ivory p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-gold/50 hover:shadow-lg open:-translate-y-0.5 open:border-gold/50 open:shadow-lg sm:p-6"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg text-navy marker:content-none">O livro é físico ou digital?<span className="shrink-0 text-xl text-gold transition-transform group-open:rotate-45">+</span></summary><p className="mt-3 leading-7 text-charcoal/80">É um livro impresso, físico — pensado para ser lido, guardado e relido.</p></details>
       <details className="group rounded-xl border border-gold/25 bg-gradient-to-b from-background to-ivory p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-gold/50 hover:shadow-lg open:-translate-y-0.5 open:border-gold/50 open:shadow-lg sm:p-6"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg text-navy marker:content-none">Quando e como recebo meu exemplar?<span className="shrink-0 text-xl text-gold transition-transform group-open:rotate-45">+</span></summary><p className="mt-3 leading-7 text-charcoal/80">Há duas formas de participar. Você pode retirar o livro pessoalmente no dia 15 de dezembro de 2026, às 19h, no Santuário Nossa Senhora das Graças (Rua 09, Quadra 38, Lote 6, JK Nova Capital), em Anápolis (GO), no lançamento oficial, e participar da noite de autógrafos com o Pe. Wesley. Ou, se preferir, pode recebê-lo pelo Correio no conforto da sua casa — a entrega acontece em até 10 dias úteis após o lançamento oficial de 15 de dezembro de 2026.</p></details>
-      <details className="group rounded-xl border border-gold/25 bg-gradient-to-b from-background to-ivory p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-gold/50 hover:shadow-lg open:-translate-y-0.5 open:border-gold/50 open:shadow-lg sm:p-6"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg text-navy marker:content-none">Quais as formas de pagamento?<span className="shrink-0 text-xl text-gold transition-transform group-open:rotate-45">+</span></summary><p className="mt-3 leading-7 text-charcoal/80">[Preencher: meios de pagamento aceitos.]</p></details>
+      <details className="group rounded-xl border border-gold/25 bg-gradient-to-b from-background to-ivory p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-gold/50 hover:shadow-lg open:-translate-y-0.5 open:border-gold/50 open:shadow-lg sm:p-6"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg text-navy marker:content-none">Quais as formas de pagamento?<span className="shrink-0 text-xl text-gold transition-transform group-open:rotate-45">+</span></summary><p className="mt-3 leading-7 text-charcoal/80">O pagamento é feito por Pix, tanto na retirada quanto no envio pelo Correio. Depois de preencher seus dados, você vê o QR Code e a chave Pix para pagar pelo aplicativo do seu banco e envia o comprovante pelo WhatsApp.</p></details>
       <details className="group rounded-xl border border-gold/25 bg-gradient-to-b from-background to-ivory p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-gold/50 hover:shadow-lg open:-translate-y-0.5 open:border-gold/50 open:shadow-lg sm:p-6"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg text-navy marker:content-none">Posso presentear alguém com este livro?<span className="shrink-0 text-xl text-gold transition-transform group-open:rotate-45">+</span></summary><p className="mt-3 leading-7 text-charcoal/80">Sim. Ao garantir seu exemplar, você pode indicar que se trata de um presente — é uma forma silenciosa de dizer "estou aqui com você" para quem estiver enfrentando uma despedida.</p></details>
     </div></div></section>
 

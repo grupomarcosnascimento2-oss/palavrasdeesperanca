@@ -48,7 +48,7 @@ export async function sendOrderApprovedEmail(pedido: {
       <table role="presentation" width="100%" style="max-width:480px;margin:0 auto;background:#FBF7EF;border-radius:12px;overflow:hidden;border:1px solid #e5decf;">
         <tr><td style="background:#0B1D2E;padding:28px 32px;text-align:center;">
           <p style="margin:0;color:#C9A45C;font-size:11px;letter-spacing:.2em;text-transform:uppercase;">Coleção Âncora</p>
-          <p style="margin:6px 0 0;color:#F4E8D0;font-size:20px;">Novo pedido garantido</p>
+          <p style="margin:6px 0 0;color:#F4E8D0;font-size:20px;">${pedido.paymentType === "pix_manual" ? "Novo pedido — aguardando pagamento" : "Novo pedido garantido"}</p>
         </td></tr>
         <tr><td style="padding:28px 32px;">
           <p style="margin:0 0 20px;font-size:15px;color:#0B1D2E;">Alguém acabou de garantir um exemplar de <em>Quando a Saudade Permanece</em>. 🎉</p>
@@ -57,7 +57,7 @@ export async function sendOrderApprovedEmail(pedido: {
             ${row("E-mail", pedido.email)}
             ${row("Telefone", pedido.telefone ?? "-")}
             ${row("Entrega", entregaLabel)}
-            ${row("Pagamento", pedido.paymentType === "pix" ? "Pix" : "Cartão de crédito")}
+            ${row("Pagamento", pedido.paymentType === "pix_manual" ? "Pix (aguardando conferência)" : pedido.paymentType === "pix" ? "Pix" : "Cartão de crédito")}
             ${row("Valor", `R$ ${pedido.valor.toFixed(2).replace(".", ",")}`)}
             ${enderecoHtml}
           </table>
@@ -77,7 +77,7 @@ export async function sendOrderApprovedEmail(pedido: {
       body: JSON.stringify({
         from: "Coleção Âncora <onboarding@resend.dev>",
         to: notifyEmails,
-        subject: `💰 Novo pedido — ${pedido.nome} (R$ ${pedido.valor.toFixed(2).replace(".", ",")})`,
+        subject: `${pedido.paymentType === "pix_manual" ? "🕓" : "💰"} Novo pedido — ${pedido.nome} (R$ ${pedido.valor.toFixed(2).replace(".", ",")})`,
         html,
       }),
     });
@@ -125,7 +125,7 @@ export async function sendOrderApprovedWhatsApp(pedido: {
 
     const destinatarios = notifyNumbers.split(",").map((n) => n.trim()).filter(Boolean);
     const entregaLabel = pedido.entrega === "correio" ? "pelo Correio" : "retirada no lançamento";
-    const pagamentoLabel = pedido.paymentType === "pix" ? "Pix" : "cartão de crédito";
+    const pagamentoLabel = pedido.paymentType === "pix_manual" ? "Pix (aguardando conferência)" : pedido.paymentType === "pix" ? "Pix" : "cartão de crédito";
     const valorLabel = `R$ ${pedido.valor.toFixed(2).replace(".", ",")}`;
 
     const texto =
