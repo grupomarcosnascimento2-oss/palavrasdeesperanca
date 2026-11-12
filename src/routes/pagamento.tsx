@@ -44,7 +44,7 @@ function PaymentPage() {
           {entrega === "presencial" ? "Retirada no dia do lançamento" : "Envio pelo Correio"}
         </p>
         <h1 className="mt-3 text-3xl text-navy sm:text-4xl">Pedido registrado!</h1>
-        <p className="mt-2 text-charcoal/75">Falta só o pagamento. Pague com Pix e garanta seu exemplar.</p>
+        <p className="mt-2 text-charcoal/75">Falta só o pagamento: copie a chave Pix abaixo e pague pelo app do seu banco.</p>
         <p className="mt-4 font-display text-2xl text-gold">{PRICE_LABEL[entrega]}</p>
 
         <div className="mt-8 rounded-2xl border border-gold/30 bg-background p-6 shadow-lg sm:p-8">
@@ -73,7 +73,7 @@ function PaymentPage() {
           <div className="mt-6 space-y-1 text-left text-sm leading-6 text-charcoal/70">
             <p className="font-semibold text-navy">Como pagar:</p>
             <p>1. Abra o aplicativo do seu banco e escolha Pix.</p>
-            <p>2. Escaneie o QR Code ou cole a chave copiada.</p>
+            <p>2. Escolha pagar com chave Pix e cole a chave copiada.</p>
             <p>3. Confira o valor de <strong>{PRICE_LABEL[entrega]}</strong> e confirme.</p>
             <p>4. Envie o comprovante pelo WhatsApp (botão abaixo).</p>
           </div>
