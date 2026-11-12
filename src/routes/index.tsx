@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createPedido } from "@/lib/pedidos";
+import { REGISTRAR_PEDIDOS } from "@/lib/pix-config";
 import bookCover from "@/assets/book-cover.png";
 import horizon from "@/assets/anchor-horizon.jpg";
 import contemplativeSea from "@/assets/contemplative-sea.jpg";
@@ -92,7 +93,17 @@ function Index() {
           ? { entrega: delivery, comprador, endereco: { cep: String(new FormData(e.currentTarget as HTMLFormElement).get("cep") ?? cep).replace(/\D/g, ""), rua, numero, complemento, bairro, cidade, uf } }
           : { entrega: delivery, comprador };
 
-      await createPedido({ data: payload });
+      if (REGISTRAR_PEDIDOS) {
+        await createPedido({ data: payload });
+      } else {
+        // Sem registro no banco: guarda os dados só neste navegador para
+        // montar a mensagem de WhatsApp do comprovante na tela de pagamento.
+        try {
+          sessionStorage.setItem("pedido-info", JSON.stringify(payload));
+        } catch {
+          /* ignora */
+        }
+      }
       navigate({ to: "/pagamento", search: { entrega: delivery } });
     } catch (err) {
       console.error(err);

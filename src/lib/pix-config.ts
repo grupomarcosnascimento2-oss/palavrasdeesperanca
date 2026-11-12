@@ -9,3 +9,9 @@ export const PIX_RECEBEDOR: string = "Wesley Xavier Ramos";
 export const PIX_QR_IMAGE: string = "";
 // WhatsApp para o comprador enviar o comprovante (formato internacional, só números).
 export const WHATSAPP_COMPROVANTE = "5561991119324";
+
+// Registro de pedidos no banco (Supabase) + e-mail de aviso. DESABILITADO por
+// enquanto: o controle de quem pagou é manual (feito pelo Pe. Wesley). Com
+// `false`, o formulário só leva o cliente à tela do Pix; os dados dele seguem
+// no texto do WhatsApp do comprovante. Para religar, troque para `true`.
+export const REGISTRAR_PEDIDOS = false;

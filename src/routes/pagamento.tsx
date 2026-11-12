@@ -33,9 +33,7 @@ function PaymentPage() {
     setTimeout(() => setCopied(false), 2500);
   }
 
-  const whatsappHref = `https://wa.me/${WHATSAPP_COMPROVANTE}?text=${encodeURIComponent(
-    `Olá! Fiz o pagamento via Pix (${PRICE_LABEL[entrega]}) do livro Quando a Saudade Permanece. Segue o comprovante.`,
-  )}`;
+  const whatsappHref = `https://wa.me/${WHATSAPP_COMPROVANTE}?text=${encodeURIComponent(buildMessage(entrega))}`;
 
   return (
     <main className="min-h-screen bg-ivory py-16 sm:py-24">
@@ -43,7 +41,7 @@ function PaymentPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">
           {entrega === "presencial" ? "Retirada no dia do lançamento" : "Envio pelo Correio"}
         </p>
-        <h1 className="mt-3 text-3xl text-navy sm:text-4xl">Pedido registrado!</h1>
+        <h1 className="mt-3 text-3xl text-navy sm:text-4xl">Quase lá!</h1>
         <p className="mt-2 text-charcoal/75">Falta só o pagamento: copie a chave Pix abaixo e pague pelo app do seu banco.</p>
         <p className="mt-4 font-display text-2xl text-gold">{PRICE_LABEL[entrega]}</p>
 
@@ -75,7 +73,7 @@ function PaymentPage() {
             <p>1. Abra o aplicativo do seu banco e escolha Pix.</p>
             <p>2. Escolha pagar com chave Pix e cole a chave copiada.</p>
             <p>3. Confira o valor de <strong>{PRICE_LABEL[entrega]}</strong> e confirme.</p>
-            <p>4. Envie o comprovante pelo WhatsApp (botão abaixo).</p>
+            <p>4. Envie o comprovante pelo WhatsApp (botão abaixo), com seus dados já preenchidos.</p>
           </div>
 
           <Button asChild variant="goldOutline" size="lg" className="mt-6 h-12 w-full text-xs font-bold uppercase tracking-[0.12em]">
@@ -84,7 +82,7 @@ function PaymentPage() {
             </a>
           </Button>
           <p className="mt-4 text-xs leading-5 text-charcoal/60">
-            Seu pedido é confirmado por conferência manual do pagamento. Assim que for conferido, entraremos em contato.
+            Seu pedido é confirmado pela conferência do pagamento. Envie o comprovante para garantir seu exemplar.
           </p>
         </div>
 
@@ -95,4 +93,36 @@ function PaymentPage() {
       </div>
     </main>
   );
+}
+
+type PedidoInfo = {
+  comprador?: { nome?: string; email?: string; telefone?: string };
+  endereco?: { cep?: string; rua?: string; numero?: string; complemento?: string; bairro?: string; cidade?: string; uf?: string };
+};
+
+// Monta o texto do WhatsApp do comprovante, incluindo os dados que o cliente
+// preencheu no formulário (guardados só no navegador dele).
+function buildMessage(entrega: "presencial" | "correio") {
+  let info: PedidoInfo = {};
+  try {
+    info = JSON.parse(sessionStorage.getItem("pedido-info") ?? "{}") as PedidoInfo;
+  } catch {
+    /* sem dados */
+  }
+  const c = info.comprador;
+  const e = info.endereco;
+  const linhas = [
+    `Olá! Fiz o pagamento via Pix (${PRICE_LABEL[entrega]}) do livro Quando a Saudade Permanece. Segue o comprovante.`,
+    "",
+  ];
+  if (c?.nome) linhas.push(`Nome: ${c.nome}`);
+  if (c?.telefone) linhas.push(`Telefone: ${c.telefone}`);
+  if (c?.email) linhas.push(`E-mail: ${c.email}`);
+  linhas.push(`Entrega: ${entrega === "correio" ? "Pelo Correio" : "Retirada no lançamento"}`);
+  if (entrega === "correio" && e) {
+    linhas.push(
+      `Endereço: ${e.rua}, ${e.numero}${e.complemento ? ` - ${e.complemento}` : ""}, ${e.bairro}, ${e.cidade}/${e.uf}, CEP ${e.cep}`,
+    );
+  }
+  return linhas.join("\n");
 }
